@@ -136,6 +136,15 @@
 
                 <v-col cols="12" class="mt-4">
                   <v-card outlined class="pa-3 result-card">
+                    <div class="text-subtitle-1 font-weight-bold mb-2">Evolução Patrimonial e do Imóvel:</div>
+                    <div id="chart">
+                      <ApexChart type="line" :options="chartOptions" :series="chartSeries" />
+                    </div>
+                  </v-card>
+                </v-col>
+
+                <v-col cols="12" class="mt-4">
+                  <v-card outlined class="pa-3 result-card">
                     <div class="text-subtitle-1 font-weight-bold mb-2">Progresso para o Objetivo:</div>
                     <v-progress-linear
                       :model-value="progressPercentage"
@@ -150,15 +159,6 @@
                     </v-progress-linear>
                     <div class="text-caption mt-2 text-center" v-if="tempoAteConseguirEmMeses !== Infinity">
                       {{ progressStatusText }}
-                    </div>
-                  </v-card>
-                </v-col>
-
-                <v-col cols="12" class="mt-4">
-                  <v-card outlined class="pa-3 result-card">
-                    <div class="text-subtitle-1 font-weight-bold mb-2">Evolução Patrimonial e do Imóvel:</div>
-                    <div id="chart">
-                      <ApexChart type="line" :options="chartOptions" :series="chartSeries" />
                     </div>
                   </v-card>
                 </v-col>
@@ -335,7 +335,6 @@ const chartOptions = computed(() => {
       },
     },
     tooltip: {
-      // NOVO: Formatar o eixo X no tooltip
       x: {
         formatter: function(val: string, { dataPointIndex }: { dataPointIndex: any}) {
           // O 'val' aqui já será a string do dateLabel que passamos em categories
