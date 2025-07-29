@@ -130,7 +130,28 @@
                         <div class="text-h6 primary--text">{{ formatCurrency(valorImovelNoFuturo) }}</div>
                       </v-card>
                     </v-col>
-                    </v-row>
+
+                  </v-row>
+                </v-col>
+
+                <v-col cols="12" class="mt-4">
+                  <v-card outlined class="pa-3 result-card">
+                    <div class="text-subtitle-1 font-weight-bold mb-2">Progresso para o Objetivo:</div>
+                    <v-progress-linear
+                      :model-value="progressPercentage"
+                      :color="progressColor"
+                      height="20"
+                      rounded
+                      striped
+                    >
+                      <template v-slot:default="{ value }">
+                        <strong>{{ value.toFixed(1) }}%</strong>
+                      </template>
+                    </v-progress-linear>
+                    <div class="text-caption mt-2 text-center" v-if="tempoAteConseguirEmMeses !== Infinity">
+                      {{ progressStatusText }}
+                    </div>
+                  </v-card>
                 </v-col>
               </v-row>
             </v-card-text>
@@ -184,6 +205,51 @@ const formattedTempoAteConseguir = computed(() => {
   return result || '0 meses';
 });
 
+const progressPercentage = computed(() => {
+  const currentImovelValue = valorImovel.value || 0;
+  const currentSaldo = saldoLiquidoDisponivel.value || 0;
+  
+  // Se não há valor do imóvel ou o saldo já é suficiente, o progresso é 100%
+  if (currentImovelValue <= 0 || currentSaldo >= valorImovelNoFuturo.value) {
+    return 100;
+  }
+
+  // Se o valor futuro do imóvel for zero (ainda não calculado ou erro), evita divisão por zero
+  if (valorImovelNoFuturo.value <= 0) {
+    return 0;
+  }
+
+  // Calcula a porcentagem do saldo atual em relação ao valor futuro do imóvel
+  // ajustado pela capacidade de poupança no primeiro mês.
+  // Vamos usar o saldo inicial + a poupança do primeiro mês como o "saldo atual que já contribuiu".
+  const effectiveCurrentSaldo = currentSaldo + (capacidadeMensalPoupanca.value || 0); // Considera o aporte do 1o mês como parte do saldo inicial para a %
+
+  let percentage = (effectiveCurrentSaldo / valorImovelNoFuturo.value) * 100;
+
+  // Garante que a porcentagem não exceda 100% ou seja menor que 0%
+  percentage = Math.max(0, Math.min(100, percentage));
+
+  return percentage;
+});
+
+const progressColor = computed(() => {
+  if (progressPercentage.value < 25) return 'red-darken-2';
+  if (progressPercentage.value < 50) return 'orange';
+  if (progressPercentage.value < 75) return 'light-green';
+  return 'green';
+});
+
+const progressStatusText = computed(() => {
+  if (progressPercentage.value >= 100) {
+    return 'Parabéns! Você já atingiu (ou superou) o valor necessário para o imóvel!';
+  }
+  // Se o cálculo indica que nunca vai conseguir
+  if (tempoAteConseguirEmMeses.value === Infinity) {
+    return 'Com as informações atuais, pode ser difícil atingir o objetivo. Considere aumentar a poupança ou o rendimento.';
+  }
+  // Se ainda falta
+  return `Você já tem ${progressPercentage.value.toFixed(1)}% do valor futuro do imóvel. Continue focado!`;
+});
 
 // Função para realizar os cálculos da simulação
 const calcular = () => {
