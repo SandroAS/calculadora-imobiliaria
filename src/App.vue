@@ -200,7 +200,7 @@ const formattedTempoAteConseguir = computed(() => {
   }
   if (meses > 0) {
     if (result) result += ' e ';
-    result += `${meses} mês${meses > 1 ? 'es' : ''}`;
+    result += `${meses} ${meses > 1 ? 'meses' : 'mês'}`;
   }
   return result || '0 meses';
 });
