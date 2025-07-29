@@ -153,6 +153,15 @@
                     </div>
                   </v-card>
                 </v-col>
+
+                <v-col cols="12" class="mt-4">
+                  <v-card outlined class="pa-3 result-card">
+                    <div class="text-subtitle-1 font-weight-bold mb-2">Evolução Patrimonial e do Imóvel:</div>
+                    <div id="chart">
+                      <ApexChart type="line" :options="chartOptions" :series="chartSeries" />
+                    </div>
+                  </v-card>
+                </v-col>
               </v-row>
             </v-card-text>
             <v-card-actions class="pa-6 pt-0 text-caption text-medium-emphasis">
@@ -168,6 +177,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import CurrencyInput from './components/CurrencyInput.vue';
+import ApexChart from 'vue3-apexcharts'
 
 const valorImovel = ref<number | null>(500000);
 const saldoLiquidoDisponivel = ref<number | null>(50000);
@@ -258,62 +268,190 @@ const progressStatusText = computed(() => {
   }
 });
 
-// Função para realizar os cálculos da simulação
+const chartData = ref<{ month: number; saldo: number; imovel: number; cdi: number; dateLabel: string }[]>([]);
+const cdiRate = 0.01; // Taxa CDI hipotética de 1% ao mês (ajuste conforme necessário para seu comparativo)
+
+const chartSeries = computed(() => {
+  return [
+    {
+      name: 'Seu Saldo Total',
+      type: 'bar', // Pode ser 'bar' ou 'line'
+      data: chartData.value.map(item => item.saldo),
+    },
+    {
+      name: 'Valor do Imóvel',
+      type: 'line',
+      data: chartData.value.map(item => item.imovel),
+    },
+    {
+      name: '100% do CDI (Comparativo)',
+      type: 'line',
+      data: chartData.value.map(item => item.cdi),
+    }
+  ];
+});
+
+const chartOptions = computed(() => {
+  return {
+    chart: {
+      height: 350,
+      type: 'line',
+      stacked: false,
+      zoom: {
+        enabled: true,
+      },
+      toolbar: { show: false }
+    },
+    dataLabels: {
+      enabled: false,
+    },
+    stroke: {
+      width: [3, 3, 3],
+      curve: 'smooth',
+    },
+    xaxis: {
+      categories: chartData.value.map(item => item.dateLabel), // Alterado para usar dateLabel
+      title: {
+        text: 'Tempo', // Pode ser apenas "Tempo" já que a data está no tooltip
+      },
+      labels: {
+        formatter: function(val: string, index: number) {
+          // Mantemos a exibição a cada 6 meses no eixo X
+          if (index % 6 === 0) { 
+            return val;
+          }
+          return '';
+        }
+      }
+    },
+    yaxis: {
+      title: {
+        text: 'Valor (R$)',
+      },
+      labels: {
+        formatter: function (val: number) {
+          return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
+        },
+      },
+    },
+    tooltip: {
+      // NOVO: Formatar o eixo X no tooltip
+      x: {
+        formatter: function(val: string, { dataPointIndex }: { dataPointIndex: any}) {
+          // O 'val' aqui já será a string do dateLabel que passamos em categories
+          return chartData.value[dataPointIndex].dateLabel;
+        }
+      },
+      y: {
+        formatter: function (val: number) {
+          return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        },
+      },
+    },
+    fill: {
+      opacity: [0.85, 0.25, 0.25],
+      gradient: {
+        inverseColors: false,
+        shade: 'light',
+        type: 'vertical',
+        opacityFrom: 0.85,
+        opacityTo: 0.55,
+        stops: [0, 100, 100, 100]
+      }
+    },
+    colors: ['#EF5350', '#424242', '#3F51B5'],
+    markers: {
+      size: 0
+    },
+  };
+});
+
+// FUNÇÃO CALCULAR - AJUSTADA PARA GERAR DATAS NO GRÁFICO
 const calcular = () => {
   let vValorImovelAtual = valorImovel.value || 0;
   let vSaldoLiquidoAtual = saldoLiquidoDisponivel.value || 0;
   const vCapacidadeMensalPoup = capacidadeMensalPoupanca.value || 0;
-  const vRendimentoMensal = (rendimentoLiquidoInvestimento.value || 0) / 100; // Converte para decimal
-  const vTaxaValorizacao = (taxaValorizacaoImovel.value || 0) / 100; // Converte para decimal
+  const vRendimentoMensal = (rendimentoLiquidoInvestimento.value || 0) / 100;
+  const vTaxaValorizacao = (taxaValorizacaoImovel.value || 0) / 100;
 
   let meses = 0;
-  const MAX_ITERATIONS = 600; // Limite de 50 anos para evitar loops infinitos
+  const MAX_ITERATIONS = 600;
 
-  // Resetar resultados
+  // Resetar resultados e dados do gráfico
   tempoAteConseguirEmMeses.value = 0;
   valorImovelNoFuturo.value = 0;
+  chartData.value = [];
 
-  // Se o saldo inicial já for suficiente, o tempo é 0 e o valor futuro é o valor atual do imóvel
+  let vSaldoCdi = saldoLiquidoDisponivel.value || 0; 
+  
+  // Obter a data atual para iniciar o cálculo dos meses
+  const startDate = new Date();
+
+  // Função auxiliar para formatar a data (MM/YYYY)
+  const formatDate = (date: Date): string => {
+    const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Mês de 0 a 11
+    const year = date.getFullYear();
+    return `${month}/${year}`;
+  };
+
+  // Adicionar o ponto inicial (Mês 0) para o gráfico
+  chartData.value.push({
+    month: 0,
+    saldo: vSaldoLiquidoAtual,
+    imovel: vValorImovelAtual,
+    cdi: vSaldoCdi,
+    dateLabel: formatDate(startDate), // Data inicial
+  });
+
   if (vSaldoLiquidoAtual >= vValorImovelAtual && vValorImovelAtual > 0) {
     tempoAteConseguirEmMeses.value = 0;
     valorImovelNoFuturo.value = vValorImovelAtual;
     return;
   }
 
-  // Se a capacidade de poupança e o rendimento forem zero e o saldo inicial não for suficiente,
-  // ou se o imóvel não valoriza e o saldo e poupança não crescem o suficiente
   if (vCapacidadeMensalPoup === 0 && vRendimentoMensal <= 0 && vSaldoLiquidoAtual < vValorImovelAtual) {
-    tempoAteConseguirEmMeses.value = Infinity; // Nunca vai conseguir
+    tempoAteConseguirEmMeses.value = Infinity;
     return;
   }
   
-  // Se a taxa de valorização for 0 e a poupança for 0, mas tem rendimento, ou se poupança positiva mas rendimento 0
   if (vCapacidadeMensalPoup === 0 && vRendimentoMensal <= 0 && vTaxaValorizacao <= 0 && vSaldoLiquidoAtual < vValorImovelAtual) {
     tempoAteConseguirEmMeses.value = Infinity;
     return;
   }
 
-
   while (vSaldoLiquidoAtual < vValorImovelAtual && meses < MAX_ITERATIONS) {
     meses++;
     
-    // Atualiza o valor do imóvel com a valorização mensal
+    // Atualiza o valor do imóvel para o próximo mês
     vValorImovelAtual *= (1 + vTaxaValorizacao);
     
-    // Acumula a poupança mensal e aplica o rendimento
+    // Calcula o saldo total com aporte e rendimento
     vSaldoLiquidoAtual = (vSaldoLiquidoAtual + vCapacidadeMensalPoup) * (1 + vRendimentoMensal);
-    // vSaldoLiquidoAtual = (vSaldoLiquidoAtual * (1 + vRendimentoMensal)) + vCapacidadeMensalPoup;
+
+    // Calcula o saldo para o comparativo CDI
+    vSaldoCdi = (vSaldoCdi + vCapacidadeMensalPoup) * (1 + cdiRate);
     
-    // Pequeno ajuste para evitar arredondamento flutuante causar loops infinitos próximos do limite
+    // Calcula a data para o mês atual no loop
+    const currentDate = new Date(startDate);
+    currentDate.setMonth(startDate.getMonth() + meses); // Adiciona 'meses' ao mês inicial
+
+    // Adiciona os dados para o gráfico a cada mês
+    chartData.value.push({
+      month: meses,
+      saldo: parseFloat(vSaldoLiquidoAtual.toFixed(2)),
+      imovel: parseFloat(vValorImovelAtual.toFixed(2)),
+      cdi: parseFloat(vSaldoCdi.toFixed(2)),
+      dateLabel: formatDate(currentDate), // Adiciona a data formatada
+    });
+
     if (Math.abs(vSaldoLiquidoAtual - vValorImovelAtual) < 0.01 && vSaldoLiquidoAtual >= vValorImovelAtual) {
-      break; // Considera como atingido se a diferença for muito pequena e o saldo for maior
+      break;
     }
   }
 
-  // Se o loop terminou porque atingiu o MAX_ITERATIONS, significa que não conseguiu
   if (meses === MAX_ITERATIONS && vSaldoLiquidoAtual < vValorImovelAtual) {
     tempoAteConseguirEmMeses.value = Infinity;
-    valorImovelNoFuturo.value = vValorImovelAtual; // Valor do imóvel no final da simulação
+    valorImovelNoFuturo.value = vValorImovelAtual;
   } else {
     tempoAteConseguirEmMeses.value = meses;
     valorImovelNoFuturo.value = vValorImovelAtual;
