@@ -12,77 +12,102 @@
                 <v-col cols="12" md="6">
                   <v-row dense class="mx-6">
                     <v-col cols="12">
-                      <CurrencyInput
-                        v-model="valorImovel"
-                        label="Valor do Imóvel (hoje):"
-                        prefix="R$"
-                        clearable
-                        variant="outlined"
-                        color="primary"
-                        density="compact"
-                        hide-details
-                        @input="calcular"
-                      />
+                      <v-tooltip text="O valor atual de mercado do imóvel que você deseja adquirir." location="top">
+                        <template v-slot:activator="{ props }">
+                          <CurrencyInput
+                            v-bind="props"
+                            v-model="valorImovel"
+                            label="Valor do Imóvel (hoje):"
+                            prefix="R$"
+                            clearable
+                            variant="outlined"
+                            color="primary"
+                            density="compact"
+                            hide-details
+                            @input="calcular"
+                          />
+                        </template>
+                      </v-tooltip>
                     </v-col>
       
                     <v-col cols="12">
-                      <CurrencyInput
-                        v-model="saldoLiquidoDisponivel"
-                        label="Saldo líquido disponível (hoje):"
-                        prefix="R$"
-                        clearable
-                        variant="outlined"
-                        density="compact"
-                        hide-details
-                        color="primary"
-                        @input="calcular"
-                      />
+                      <v-tooltip text="Seu montante financeiro disponível hoje para investir ou como entrada." location="top">
+                        <template v-slot:activator="{ props }">
+                          <CurrencyInput
+                            v-bind="props"
+                            v-model="saldoLiquidoDisponivel"
+                            label="Saldo líquido disponível (hoje):"
+                            prefix="R$"
+                            clearable
+                            variant="outlined"
+                            density="compact"
+                            hide-details
+                            color="primary"
+                            @input="calcular"
+                          />
+                        </template>
+                      </v-tooltip>
                     </v-col>
       
                     <v-col cols="12">
-                      <CurrencyInput
-                        v-model="capacidadeMensalPoupanca"
-                        label="Capacidade mensal de poupança (hoje):"
-                        prefix="R$"
-                        clearable
-                        variant="outlined"
-                        density="compact"
-                        hide-details
-                        color="primary"
-                        @input="calcular"
-                      />
+                      <v-tooltip text="Quantia que você pode poupar e investir mensalmente." location="top">
+                        <template v-slot:activator="{ props }">
+                          <CurrencyInput
+                            v-bind="props"
+                            v-model="capacidadeMensalPoupanca"
+                            label="Capacidade mensal de poupança (hoje):"
+                            prefix="R$"
+                            clearable
+                            variant="outlined"
+                            density="compact"
+                            hide-details
+                            color="primary"
+                            @input="calcular"
+                          />
+                        </template>
+                      </v-tooltip>
                     </v-col>
       
                     <v-col cols="12">
-                      <v-text-field
-                        v-model.number="rendimentoLiquidoInvestimento"
-                        label="Rendimento líquido do Investimento (mensal)"
-                        type="number"
-                        suffix="%"
-                        clearable
-                        variant="outlined"
-                        density="compact"
-                        hide-details
-                        color="primary"
-                        step="0.01"
-                        @input="calcular"
-                      ></v-text-field>
+                      <v-tooltip text="Taxa de juros líquida média que você espera obter em seus investimentos (ex: CDI, poupança)." location="top">
+                        <template v-slot:activator="{ props }">
+                          <v-text-field
+                            v-bind="props"
+                            v-model.number="rendimentoLiquidoInvestimento"
+                            label="Rendimento líquido do Investimento (mensal)"
+                            type="number"
+                            suffix="%"
+                            clearable
+                            variant="outlined"
+                            density="compact"
+                            hide-details
+                            color="primary"
+                            step="0.01"
+                            @input="calcular"
+                          ></v-text-field>
+                        </template>
+                      </v-tooltip>
                     </v-col>
       
                     <v-col cols="12">
-                      <v-text-field
-                        v-model.number="taxaValorizacaoImovel"
-                        label="Taxa de Valorização do Imóvel (mensal)"
-                        type="number"
-                        suffix="%"
-                        clearable
-                        variant="outlined"
-                        density="compact"
-                        hide-details
-                        color="primary"
-                        step="0.01"
-                        @input="calcular"
-                      ></v-text-field>
+                      <v-tooltip text="Estimativa de quanto o valor do imóvel pode crescer mensalmente no mercado." location="top">
+                        <template v-slot:activator="{ props }">
+                          <v-text-field
+                            v-bind="props"
+                            v-model.number="taxaValorizacaoImovel"
+                            label="Taxa de Valorização do Imóvel (mensal)"
+                            type="number"
+                            suffix="%"
+                            clearable
+                            variant="outlined"
+                            density="compact"
+                            hide-details
+                            color="primary"
+                            step="0.01"
+                            @input="calcular"
+                          ></v-text-field>
+                        </template>
+                      </v-tooltip>
                     </v-col>
                   </v-row>
                 </v-col>
