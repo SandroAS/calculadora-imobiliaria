@@ -87,6 +87,7 @@
                           ></v-text-field>
                         </template>
                       </v-tooltip>
+                      <small>O valor 0.77 é o rendimento atual da Selic líquido de IR</small>
                     </v-col>
       
                     <v-col cols="12">
@@ -108,6 +109,7 @@
                           ></v-text-field>
                         </template>
                       </v-tooltip>
+                      <small>O valor 0,5 dos imóveis é a média dos últimos 10 anos do índice FipeZap</small>
                     </v-col>
                   </v-row>
                 </v-col>
