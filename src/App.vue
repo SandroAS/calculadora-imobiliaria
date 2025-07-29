@@ -69,7 +69,7 @@
                     </v-col>
       
                     <v-col cols="12">
-                      <v-tooltip text="Taxa de juros líquida média que você espera obter em seus investimentos (ex: CDI, poupança)." location="top">
+                      <v-tooltip text="Taxa de juros líquida média que você espera obter em seus investimentos (ex: CDI, tesouro IPCA, etc)." location="top">
                         <template v-slot:activator="{ props }">
                           <v-text-field
                             v-bind="props"
