@@ -125,7 +125,7 @@
                       <v-card outlined class="pa-3 result-card">
                         <div class="text-subtitle-1 font-weight-bold">Valor que precisa guardar:</div>
                         <div class="text-caption text-wrap">
-                          {{ `Esse é o valor do imóvel que hoje vale ${formatCurrency(valorImovel || 0)}, depois ${formattedTempoAteConseguir} R$` }}
+                          {{ `Esse é o valor do imóvel que hoje vale ${formatCurrency(valorImovel || 0)}, depois ${formattedTempoAteConseguir}` }}
                         </div>
                         <div class="text-h6 primary--text">{{ formatCurrency(valorImovelNoFuturo) }}</div>
                       </v-card>
