@@ -157,7 +157,7 @@
                         <strong>{{ value.toFixed(1) }}%</strong>
                       </template>
                     </v-progress-linear>
-                    <div class="text-caption mt-2 text-center" v-if="tempoAteConseguirEmMeses !== Infinity">
+                    <div class="text-subtitle-1 font-weight-bold mt-2 text-center" v-if="tempoAteConseguirEmMeses !== Infinity">
                       {{ progressStatusText }}
                     </div>
                   </v-card>
