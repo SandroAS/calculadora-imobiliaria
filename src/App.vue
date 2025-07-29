@@ -243,12 +243,19 @@ const progressStatusText = computed(() => {
   if (progressPercentage.value >= 100) {
     return 'Parabéns! Você já atingiu (ou superou) o valor necessário para o imóvel!';
   }
+  
   // Se o cálculo indica que nunca vai conseguir
   if (tempoAteConseguirEmMeses.value === Infinity) {
     return 'Com as informações atuais, pode ser difícil atingir o objetivo. Considere aumentar a poupança ou o rendimento.';
   }
-  // Se ainda falta
-  return `Você já tem ${progressPercentage.value.toFixed(1)}% do valor futuro do imóvel. Continue focado!`;
+
+  const anosRestantes = tempoAteConseguirEmMeses.value / 12;
+
+  if (anosRestantes < 2) {
+    return 'Vejo que você está próximo do seu objetivo! Continue poupando.';
+  } else { // Implicitamente, se for 2 anos ou mais
+    return 'Talvez você precise de um planejamento patrimonial! Clique aqui para saber mais.';
+  }
 });
 
 // Função para realizar os cálculos da simulação
